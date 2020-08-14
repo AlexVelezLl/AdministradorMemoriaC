@@ -21,7 +21,8 @@ typedef struct info_bloque{
 
 typedef struct lista{
 	info_bloque* nodos;
-	unsigned int tam;
+	unsigned int tam_efectivo;
+	unsigned int tam_max;
 	info_bloque primero;
 	info_bloque ultimo;
 }lista;
