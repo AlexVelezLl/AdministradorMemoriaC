@@ -15,6 +15,7 @@ void printstatus(){
 	printf("numero maximo de bloques: %d\n",admin.info.max_bloques);
 	printf("numero de asignacionees: %d\n",admin.info.asignaciones);
 	printf("numero de liberaciones: %d\n",admin.info.liberaciones);
+	printf("numero de reasignaciones: %d\n",admin.info.reasignaciones);
 	printf("numero de desfragmentaciones: %d\n",admin.info.desfragmentaciones);
 	printf("tamaño asignado: %d\n",admin.info.tam_asign);
 	printf("tamaño libre: %d\n",admin.info.tam_libre);

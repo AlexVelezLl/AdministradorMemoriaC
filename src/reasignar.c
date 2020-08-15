@@ -1,16 +1,20 @@
 #include<infoadmin.h>
 #include<stdlib.h>
 #include<stdio.h>
+
 /**
  * Funciones implementadas en otros archivos
  */
 void* memasign(size_t tam);
 void actualizar_contiguo_mayor();
+void liberar(void* ptr);
 
 /**
  * Funciones que estan en este archivo.
  */
 info_bloque* buscar_nodo_prev(void* ptr, int* superbloque_index);
+unsigned int delta_mayor(info_bloque* centinela);
+void copiar_bytes(void* ptr1, void* ptr2, int n);
 
 /**
  * Funcion que reasigna el tamaño de un bloque
@@ -23,7 +27,7 @@ info_bloque* buscar_nodo_prev(void* ptr, int* superbloque_index);
  * La funcion retorna NULL si el puntero pasado no fue
  * creado con memasign, o si el tamaño es menor que 1.
  */
-void* reasign(void* ptr, size_t tam){
+void* reasignar(void* ptr, size_t tam){
 	if(tam<1){
 		printf("ERROR - NO SE PUEDE REASIGNAR EL BLOQUE A UN BLOQUE CON UN TAMAÑO MENOR A 1, USE LIBERAR EN VEZ DE REASIGN SI DESEA LIBERAR EL BLOQUE\n");
 		return NULL;
@@ -35,8 +39,10 @@ void* reasign(void* ptr, size_t tam){
 		printf("ERROR - %p NO ES UN PUNTERO CREADO CON MEMASIGN\n",ptr);
 		return NULL;
 	}
+
 	unsigned int tam_actual = nodo-> tam;
-	if(tam<=tam_actual){
+	unsigned int pot_tam_bloque = nodo->tam + nodo->delta;
+	if(tam<=pot_tam_bloque){
 		nodo->tam = tam;
 		nodo->delta += (tam_actual-tam);
 		
@@ -46,16 +52,24 @@ void* reasign(void* ptr, size_t tam){
 		
 		superbloque* super = admin.superbloques;
 		super+=supernodo_index;
-		if(nodo->delta>super->tam_contiguo_mayor){
-			super->tam_contiguo_mayor = nodo->delta;
+		if(tam_actual>=tam){
+			if(nodo->delta>super->tam_contiguo_mayor){
+				super->tam_contiguo_mayor = nodo->delta;
+			}
+		}else{
+			super->tam_contiguo_mayor = delta_mayor(super->nodo_centinela);
 		}
 		actualizar_contiguo_mayor();
+		return ptr;
 	}
+	void* ptr_nuevo = memasign(tam);
+	copiar_bytes(nodo->dir_actual,ptr_nuevo,tam_actual);
+	liberar(nodo->dir_actual);
+
+	admin.info.asignaciones--;
+	admin.info.liberaciones--;
+	admin.info.reasignaciones++;
 	return ptr;
-	//unsigned int tam_faltante = tam-tam_actual;
-	//if(nodo){
-	
-	//}
 }
 
 /**
@@ -80,5 +94,32 @@ info_bloque* buscar_nodo_prev(void* ptr,int* superbloque_index){
 	return NULL;
 }
 
+/**
+ * Busca el mayor delta que haya en un superbloque
+ * a partir de su nodo centinela. Este mayor delta
+ * representara el tamaño contiguo mayor del 
+ * superbloque
+ */
+unsigned int delta_mayor(info_bloque* centinela){
+	unsigned int maximo =0;
+	info_bloque* nodo_viajero = centinela->siguiente;
+	while(nodo_viajero !=NULL && nodo_viajero->tam>0){
+		printf("Estoy aqui jaja\n");
+		if(nodo_viajero->delta>maximo){
+			maximo = nodo_viajero->delta;
+		}
+		nodo_viajero = nodo_viajero->siguiente;
+	}
+	return maximo;
+}
 
-
+/*
+ * Copia los n primeros bytes desde ptr1 a ptr2
+ */
+void copiar_bytes(void* ptr1, void* ptr2, int n){
+	unsigned char* ptrsrc = (unsigned char*)ptr1;
+	unsigned char* ptrdes = (unsigned char*)ptr2;
+	for(int i=0;i<n;i++){
+		*ptrdes++ = *ptrsrc++;
+	}
+}
