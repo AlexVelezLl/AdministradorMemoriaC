@@ -1,5 +1,7 @@
 #include<infoadmin.h>
 #include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 
 info_bloque* reservar_bloque(size_t tam,int superbloque_index);
 info_bloque* nodo_libre();
@@ -42,6 +44,10 @@ void* memasign(size_t tam){
 	bloque_anterior->delta = 0;
 	bloque_anterior->siguiente = nodo_nuevo;
 	
+	if(bloque_anterior == admin.lista_bloques.ultimo){
+		printf("Estoy obviamente aqui\n");
+		admin.lista_bloques.ultimo = nodo_nuevo;
+	}
 	/* Actualizando informacion. */
 	admin.lista_bloques.tam_efectivo++;
 	admin.info.bloques_util++;
@@ -99,6 +105,10 @@ info_bloque* reservar_bloque(size_t tam, int superbloque_index){
 	return bloque;
 }
 
+/**
+ * Metodo que actualiza el campo bloque contiguo mayor de
+ * la informacion del admin
+ */
 void actualizar_contiguo_mayor(){
 	int maximo = 0;
 	superbloque* super = admin.superbloques;
@@ -109,6 +119,7 @@ void actualizar_contiguo_mayor(){
 	}
 	admin.info.tam_contiguo_mayor = maximo;
 }
+
 /**
  * Funcion que crea un nuevo superbloque de acuerdo al
  * tamaño necesitado (se escoge el maximo entre el tamaño
@@ -118,7 +129,45 @@ void actualizar_contiguo_mayor(){
  * Retorna NULL si no pudo crear el nuevo superbloque
  */
 info_bloque* crear_superbloque(size_t tam){
+	int nuevo_tam;
+	if(tam*1.5>1048576){
+		nuevo_tam = tam*1.5;
+	}else{
+		nuevo_tam = 1048576;
+	}
+	void* ptr = malloc(nuevo_tam);
 
+	int index=admin.info.n_superbloques;
+	if(admin.info.n_superbloques == admin.info.max_superbloques){
+		int max_superbloques = admin.info.max_superbloques;
+		admin.superbloques = (superbloque*)realloc(admin.superbloques,(max_superbloques+5)*sizeof(superbloque));
+		memset(admin.superbloques+max_superbloques,0,5*sizeof(superbloque));
+		admin.info.max_superbloques+=5;
+	}
+	
+	info_bloque* centinela = nodo_libre();
+	if(centinela==NULL){
+		return NULL;
+	}
+	centinela->dir_actual = ptr;
+	centinela->dir_anterior = NULL;
+	centinela->tam = 0;
+	centinela->delta = nuevo_tam;
+	centinela->siguiente = NULL;
+
+	info_bloque* ultimo = admin.lista_bloques.ultimo;
+	ultimo->siguiente = centinela;
+	admin.lista_bloques.ultimo = centinela;
+
+	superbloque* super = admin.superbloques;
+	super+= index;
+	super->ptr = ptr;
+	super->tam = nuevo_tam;
+	super->tam_contiguo_mayor = nuevo_tam;
+	super->nodo_centinela = centinela;
+	actualizar_contiguo_mayor();
+
+	return centinela;
 }
 
 /**

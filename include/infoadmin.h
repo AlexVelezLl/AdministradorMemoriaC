@@ -23,6 +23,7 @@ typedef struct lista{
 	info_bloque* nodos;
 	unsigned int tam_efectivo;
 	unsigned int tam_max;
+	info_bloque* ultimo;
 }lista;
 
 typedef struct superbloque{

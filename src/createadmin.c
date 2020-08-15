@@ -36,6 +36,7 @@ void createadmin(){
 		.nodos = infobloques,
 		.tam_efectivo = 1,
 		.tam_max = 128,
+		.ultimo = infobloques
 	};
 
 	admin.lista_bloques = lista_bloques;
