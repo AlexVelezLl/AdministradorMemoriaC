@@ -1,52 +1,114 @@
 #include<infoadmin.h>
 #include<stdio.h>
 
-info_bloque* buscar_bloque(size_t tam);
+info_bloque* reservar_bloque(size_t tam,int superbloque_index);
 info_bloque* nodo_libre();
 info_bloque* crear_superbloque(size_t tam);
 void crear_mas_nodos();
+void actualizar_contiguo_mayor();
+int obt_num_superbloque();
 
-
+/**
+ * Devuelve el puntero a un  bloque de memoria de tamaño tam
+ *
+ * Devuelve NULL si tuvo algun error
+ */
 void* memasign(size_t tam){
 	if(admin.superbloques == NULL){
 		createadmin();
 	}
 	
 	info_bloque* nodo_nuevo = nodo_libre();
-	info_bloque* bloque_anterior = buscar_bloque(tam);
-	if(bloque_anterior==NULL){
+	if(nodo_nuevo == NULL){
 		return NULL;
 	}
-	
-	nodo_nuevo->dir_actual = bloque_anterior->dir_actual+tam;
+	info_bloque* bloque_anterior;
+	int superbloque_index = obt_num_superbloque(tam);	
+	if(superbloque_index==-1){
+		bloque_anterior = crear_superbloque(tam);
+		if(bloque_anterior==NULL){
+			return NULL;
+		}
+	}else{
+		bloque_anterior = reservar_bloque(tam,superbloque_index);
+	}
+
+	/* Insertando nodo. */ 
+	nodo_nuevo->dir_actual = bloque_anterior->dir_actual+bloque_anterior->tam;
 	nodo_nuevo->dir_anterior = NULL;
 	nodo_nuevo->tam = tam;
 	nodo_nuevo->delta = bloque_anterior->delta - tam;
 	nodo_nuevo->siguiente = bloque_anterior->siguiente;
-
 	bloque_anterior->delta = 0;
 	bloque_anterior->siguiente = nodo_nuevo;
-
-	admin.lista_bloques.tam_efectivo++;	
+	
+	/* Actualizando informacion. */
+	admin.lista_bloques.tam_efectivo++;
+	admin.info.bloques_util++;
+	admin.info.asignaciones++;
+	admin.info.tam_asign+=tam;
+	admin.info.tam_libre-=tam;
+	actualizar_contiguo_mayor();
 	return nodo_nuevo->dir_actual;
 }
 
-
 /*
- * Busca el primer bloque cuyo delta sea menor o igual que 
- * tam, si no encuentra ningun bloque retorna NULL
+ * Devuelve el indice del superbloque que puede contener
+ * ese tamaño
  */
-info_bloque* buscar_bloque(size_t tam){
-	info_bloque* n_viajero = admin.lista_bloques.nodos;
-	while(n_viajero!=NULL){
-		if(n_viajero->tam<=tam){
-			return n_viajero;
+int obt_num_superbloque(size_t tam){
+	superbloque* super = admin.superbloques;
+	for(int i = 0; i<admin.info.n_superbloques;i++){
+		if(super->tam_contiguo_mayor>=tam){
+			return i;
 		}
-		n_viajero++;
+		super++;
 	}
-	return crear_superbloque(tam);
+	return -1;
 }
 
+/**
+ * separa un bloque de memoria del superbloque del indice mandado
+ * por parametro, ademas actualiza la informacion del superbloque
+ * contiguo mayor
+ */
+info_bloque* reservar_bloque(size_t tam, int superbloque_index){
+	superbloque* super = admin.superbloques;
+	super+=superbloque_index;
+	info_bloque* bloque = NULL;
+	info_bloque* nodo_viajero = super->nodo_centinela;
+	int maximo = 0;
+	do{
+		if(bloque == NULL && nodo_viajero->delta >= tam){
+			bloque = nodo_viajero;
+			if(bloque->delta-tam>maximo){
+				maximo = bloque->delta - tam;
+			}
+		}else{
+			if(nodo_viajero->delta>maximo){
+				maximo = nodo_viajero->delta;
+			}
+		}
+		if(nodo_viajero -> siguiente ==NULL){
+			break;
+		}
+		nodo_viajero = nodo_viajero->siguiente;
+	}while(nodo_viajero->tam!=0);
+
+	super->tam_contiguo_mayor = maximo;
+	return bloque;
+}
+
+void actualizar_contiguo_mayor(){
+	int maximo = 0;
+	superbloque* super = admin.superbloques;
+	for(int i=0; i<admin.info.n_superbloques;i++){
+		if((super+i)->tam_contiguo_mayor>maximo){
+			maximo = (super+i)->tam_contiguo_mayor;
+		}
+	}
+	admin.info.tam_contiguo_mayor = maximo;
+}
 /**
  * Funcion que crea un nuevo superbloque de acuerdo al
  * tamaño necesitado (se escoge el maximo entre el tamaño
@@ -89,7 +151,6 @@ info_bloque* nodo_libre(){
 void crear_mas_nodos(){
 
 }
-
 
 int main(){
 	int*a = (int*)memasign(10*sizeof(int));
