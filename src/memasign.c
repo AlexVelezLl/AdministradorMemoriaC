@@ -6,7 +6,7 @@
 info_bloque* reservar_bloque(size_t tam,int superbloque_index);
 info_bloque* nodo_libre();
 info_bloque* crear_superbloque(size_t tam);
-void crear_mas_nodos();
+int crear_mas_nodos();
 void actualizar_contiguo_mayor();
 int obt_num_superbloque();
 
@@ -140,7 +140,11 @@ info_bloque* crear_superbloque(size_t tam){
 	int index=admin.info.n_superbloques;
 	if(admin.info.n_superbloques == admin.info.max_superbloques){
 		int max_superbloques = admin.info.max_superbloques;
-		admin.superbloques = (superbloque*)realloc(admin.superbloques,(max_superbloques+5)*sizeof(superbloque));
+		superbloque* superbloques = (superbloque*)realloc(admin.superbloques,(max_superbloques+5)*sizeof(superbloque));
+		if(superbloques==NULL){
+			return NULL;
+		}
+		admin.superbloques = superbloques;
 		memset(admin.superbloques+max_superbloques,0,5*sizeof(superbloque));
 		admin.info.max_superbloques+=5;
 	}
@@ -172,7 +176,7 @@ info_bloque* crear_superbloque(size_t tam){
 
 /**
  * Metodo que busca un nodo libre dentro del array 
- * de nodos que estan en el stack.
+ * de nodos..
  * 
  * Este metodo se realiza para poder tener todos los
  * nodos de la lista en un bloque de memoria contigua,
@@ -188,27 +192,56 @@ info_bloque* nodo_libre(){
 		n_viajero++;
 	}
 	int max_actual = admin.lista_bloques.tam_max;
-	crear_mas_nodos();
+	int val = crear_mas_nodos();
+	if(val == -1){
+		return NULL;
+	}
 	return admin.lista_bloques.nodos+max_actual;
 }
 
 /**
  * Funcion que aumenta el tamaño en el heap destinado a
- * guardar los nodos de la lista al doble del tamaño actual,
- * ademas actualiza todas las referencias asociadas a esos nodos
- */
-void crear_mas_nodos(){
+ * guardar los nodos de la lista en 128.
+ *
+ * Ademas actualiza todas las referencias asociadas a esos nodos
+ * en caso de ser necesario.
+ * retorna la cantidad de nodos creados y -1 si hubo error.
+ * */
+int crear_mas_nodos(){
+	int max_nodos = admin.info.max_bloques;
+	info_bloque* nodos = realloc(admin.lista_bloques.nodos,(max_nodos+128)*sizeof(info_bloque));
+	if(nodos==NULL){
+		return -1;
+	}
+	memset(nodos+max_nodos,0,128*sizeof(info_bloque));
+	if(nodos!=admin.lista_bloques.nodos){
+		long antes = (long) admin.lista_bloques.nodos;
+		long despues = (long) nodos;
+		long dif = despues - antes;
+		admin.lista_bloques.nodos = nodos;
+		admin.lista_bloques.ultimo+=dif;
+		superbloque* super = admin.superbloques;
+		for(int i=0; i<admin.info.n_superbloques;i++){
+			(super+i)->nodo_centinela += dif;
+		}
+		
+		info_bloque* nodo_viajero = admin.lista_bloques.nodos;
+		for(int i=0; i<admin.lista_bloques.tam_efectivo-1;i++){
+			nodo_viajero->siguiente +=dif;
+		}
 
+	}
+	return 128;
 }
 
 int main(){
-	int*a = (int*)memasign(10*sizeof(int));
-	
-	for(int i = 0; i<10; i++){
-		*(a+i) = i;
-	}
-
-	for(int i = 0; i<10; i++){
-		printf("%d",*(a+i));
+	while(1){
+		printf("Escribe un espacio de memoria a reservar: ");
+		int a;
+		scanf("%d",&a);
+		if(a==0){
+			break;
+		}
+		memasign(a);
 	}
 }
