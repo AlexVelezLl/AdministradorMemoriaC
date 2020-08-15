@@ -7,6 +7,7 @@ void createadmin(){
 		.bloques_util = 0,
 		.max_bloques = 128,
 		.asignaciones = 0,
+		.reasignaciones = 0,
 		.liberaciones = 0,
 		.desfragmentaciones = 0,
 		.tam_asign = 0,

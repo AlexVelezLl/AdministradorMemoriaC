@@ -5,6 +5,7 @@ typedef struct info_memadmin{
 	unsigned int max_bloques;
 	unsigned int asignaciones;
 	unsigned int liberaciones;
+	unsigned int reasignaciones;
 	unsigned int desfragmentaciones;
 	unsigned int tam_asign;
 	unsigned int tam_libre;

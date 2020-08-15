@@ -20,10 +20,6 @@ void* memasign(size_t tam){
 		createadmin();
 	}
 	
-	info_bloque* nodo_nuevo = nodo_libre();
-	if(nodo_nuevo == NULL){
-		return NULL;
-	}
 	info_bloque* bloque_anterior;
 	int superbloque_index = obt_num_superbloque(tam);	
 	if(superbloque_index==-1){
@@ -31,11 +27,19 @@ void* memasign(size_t tam){
 		if(bloque_anterior==NULL){
 			return NULL;
 		}
+
 	}else{
 		bloque_anterior = reservar_bloque(tam,superbloque_index);
 	}
-
+	
+	info_bloque* nodo_nuevo = nodo_libre();
+	if(nodo_nuevo == NULL){
+		return NULL;
+	}
 	/* Insertando nodo. */ 
+	if(bloque_anterior == NULL){
+		printf("EFE\n");
+	}
 	nodo_nuevo->dir_actual = bloque_anterior->dir_actual+bloque_anterior->tam;
 	nodo_nuevo->dir_anterior = NULL;
 	nodo_nuevo->tam = tam;
@@ -45,9 +49,9 @@ void* memasign(size_t tam){
 	bloque_anterior->siguiente = nodo_nuevo;
 	
 	if(bloque_anterior == admin.lista_bloques.ultimo){
-		printf("Estoy obviamente aqui\n");
 		admin.lista_bloques.ultimo = nodo_nuevo;
 	}
+	
 	/* Actualizando informacion. */
 	admin.lista_bloques.tam_efectivo++;
 	admin.info.bloques_util++;
@@ -167,8 +171,10 @@ info_bloque* crear_superbloque(size_t tam){
 	super+= index;
 	super->ptr = ptr;
 	super->tam = nuevo_tam;
-	super->tam_contiguo_mayor = nuevo_tam;
+	super->tam_contiguo_mayor = nuevo_tam - tam;
 	super->nodo_centinela = centinela;
+	admin.info.n_superbloques++;
+	admin.info.tam_libre+=nuevo_tam;
 	actualizar_contiguo_mayor();
 
 	return centinela;
@@ -231,17 +237,8 @@ int crear_mas_nodos(){
 		}
 
 	}
+	admin.lista_bloques.tam_max +=128;
+	admin.info.max_bloques+=128;
 	return 128;
 }
 
-int main(){
-	while(1){
-		printf("Escribe un espacio de memoria a reservar: ");
-		int a;
-		scanf("%d",&a);
-		if(a==0){
-			break;
-		}
-		memasign(a);
-	}
-}
