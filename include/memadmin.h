@@ -6,6 +6,8 @@ void desfragmentar();
 
 void liberar(void* ptr);
 
-void print_status();
+void mostrar_estado();
 
 void* nueva_dir(void* ant_ptr);
+
+void destruir_admin();
