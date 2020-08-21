@@ -2,7 +2,7 @@ void* memasign(size_t tam);
 
 void* casign(size_t tam);
 
-void* reasingnar(void* ant_ptr, size_t new_tam);
+void* reasignar(void* ant_ptr, size_t new_tam);
 
 void desfragmentar();
 
