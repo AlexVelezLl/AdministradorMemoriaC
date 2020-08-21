@@ -92,8 +92,7 @@ info_bloque *buscar_nodo_prev(void *ptr, int *superbloque_index)
 	*superbloque_index = -1;
 	info_bloque *nodo_viajero = admin.lista_bloques.nodos;
 	while (nodo_viajero->siguiente != NULL)
-	{	
-		printf("efe unu\n");
+	{
 		if (nodo_viajero->tam == 0)
 		{
 			*superbloque_index += 1;

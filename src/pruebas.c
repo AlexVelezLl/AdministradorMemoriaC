@@ -29,6 +29,7 @@ int main()
 	do
 	{
 		mostrar_opciones();
+		printf("Escoja una opcion: ");
 		scanf("%d", &opc);
 		realizar_opcion(opc);
 		printf("Operacion Terminada!\n\n");
@@ -100,7 +101,12 @@ void reservar_bloque_nuevo()
 	scanf("%d", &tam);
 	for (int i = 0; i < n_bloques; i++)
 	{
+		if (efectivo == TAM)
+		{
+			aumentar_tam_arreglo();
+		}
 		*(punteros + efectivo + i) = memasign(tam);
+		efectivo++;
 	}
 }
 
@@ -114,7 +120,12 @@ void reservar_bloque_cero()
 	scanf("%d", &tam);
 	for (int i = 0; i < n_bloques; i++)
 	{
+		if (efectivo == TAM)
+		{
+			aumentar_tam_arreglo();
+		}
 		*(punteros + efectivo + i) = casign(tam);
+		efectivo++;
 	}
 }
 
@@ -124,6 +135,7 @@ void liberar_bloque()
 	int id_bloque;
 	scanf("%d", &id_bloque);
 	liberar(*(punteros + id_bloque));
+	*(punteros + id_bloque) = NULL;
 }
 
 void reasignar_bloque()
@@ -134,11 +146,18 @@ void reasignar_bloque()
 	printf("Escriba el nuevo tamaño que le desea asignar: ");
 	int new_tam;
 	scanf("%d", &new_tam);
-	reasignar(*(punteros + id_bloque), new_tam);
+	*(punteros + id_bloque) = reasignar(*(punteros + id_bloque), new_tam);
 }
 
 void actualizar_direcciones()
 {
+	for (int i = 0; i < efectivo; i++)
+	{
+		if (*(punteros + i) != NULL)
+		{
+			*(punteros + i) = nueva_dir(*(punteros + i));
+		}
+	}
 }
 
 void mostrar_estado_nodos() {}
