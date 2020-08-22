@@ -12,7 +12,7 @@ void *nueva_dir(void *ant_ptr)
 		{
 			return nodo_viajero->dir_actual;
 		}
-		if (ant_ptr == nodo_viajero->dir_actual)
+		if (ant_ptr == nodo_viajero->dir_actual && nodo_viajero->tam > 0)
 		{
 			es_dir_actual = 1;
 		}

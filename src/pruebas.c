@@ -13,14 +13,19 @@ void liberar_bloque();
 void reasignar_bloque();
 void actualizar_direcciones();
 void agrandar_arreglo();
+void dar_contenido();
+void mostrar_contenido();
+void mostrar_superbloques();
 void mostrar_estado_nodos();
 
 void **punteros;
-int TAM = 100;
+int *tamanos;
+int TAMAN = 100;
 int efectivo = 0;
 int main()
 {
-	punteros = malloc(TAM * sizeof(void *));
+	punteros = malloc(TAMAN * sizeof(void *));
+	tamanos = malloc(TAMAN * sizeof(int));
 	int opcion = 0;
 	printf("╔═══════════════════════════════════════════╗\n");
 	printf("║     PRUEBAS ADMINISTRADOR DE MEMORIA      ║\n");
@@ -33,7 +38,7 @@ int main()
 		scanf("%d", &opc);
 		realizar_opcion(opc);
 		printf("Operacion Terminada!\n\n");
-	} while (opc != 9);
+	} while (opc != 12);
 	printf("Saliendo...\n");
 	printf("Destruyendo administrador de memoria.\n");
 	destruir_admin();
@@ -48,10 +53,13 @@ void mostrar_opciones()
 	printf("3.- Liberar bloque de memoria.\n");
 	printf("4.- Reasignar bloque de memoria.\n");
 	printf("5.- Desfragmentar memoria.\n");
-	printf("6.- Actualizar direcciones de memoria\n");
-	printf("7.- Mostrar estado del administrador de memoria\n");
-	printf("8.- Mostrar bloques usados \n");
-	printf("9.- Salir\n");
+	printf("6.- Actualizar direcciones de memoria.\n");
+	printf("7.- Asignar contenido.\n");
+	printf("8.- Mostrar contenido.\n");
+	printf("9.- Mostrar estado del administrador de memoria.\n");
+	printf("10.- Mostrar estado de superbloques.\n");
+	printf("11.- Mostrar bloques usados.\n");
+	printf("12.- Salir\n");
 }
 
 void realizar_opcion(int opc)
@@ -61,30 +69,51 @@ void realizar_opcion(int opc)
 	case 1:
 		reservar_bloque_nuevo();
 		break;
+
 	case 2:
 		reservar_bloque_cero();
 		break;
+
 	case 3:
 		liberar_bloque();
 		break;
+
 	case 4:
 		reasignar_bloque();
 		break;
+
 	case 5:
 		desfragmentar();
 		break;
+
 	case 6:
 		actualizar_direcciones();
 		break;
+
 	case 7:
+		dar_contenido();
+		break;
+
+	case 8:
+		mostrar_contenido();
+		break;
+
+	case 9:
 		mostrar_estado();
 		break;
-	case 8:
+
+	case 10:
+		mostrar_superbloques();
+		break;
+
+	case 11:
 		mostrar_estado_nodos();
 		break;
-	case 9:
+
+	case 12:
 		printf("Saliendo...\n");
 		break;
+
 	default:
 		printf("No ha ingresado una opcion correcta, por favor ingrese una opcion correcta\n");
 		break;
@@ -101,13 +130,14 @@ void reservar_bloque_nuevo()
 	scanf("%d", &tam);
 	for (int i = 0; i < n_bloques; i++)
 	{
-		if (efectivo == TAM)
+		if (efectivo == TAMAN)
 		{
 			aumentar_tam_arreglo();
 		}
 		*(punteros + efectivo + i) = memasign(tam);
-		efectivo++;
+		*(tamanos + efectivo + i) = tam;
 	}
+	efectivo += n_bloques;
 }
 
 void reservar_bloque_cero()
@@ -120,11 +150,12 @@ void reservar_bloque_cero()
 	scanf("%d", &tam);
 	for (int i = 0; i < n_bloques; i++)
 	{
-		if (efectivo == TAM)
+		if (efectivo == TAMAN)
 		{
 			aumentar_tam_arreglo();
 		}
 		*(punteros + efectivo + i) = casign(tam);
+		*(tamanos + efectivo + i) = tam;
 		efectivo++;
 	}
 }
@@ -147,6 +178,7 @@ void reasignar_bloque()
 	int new_tam;
 	scanf("%d", &new_tam);
 	*(punteros + id_bloque) = reasignar(*(punteros + id_bloque), new_tam);
+	*(tamanos + id_bloque) = new_tam;
 }
 
 void actualizar_direcciones()
@@ -160,10 +192,87 @@ void actualizar_direcciones()
 	}
 }
 
-void mostrar_estado_nodos() {}
+void mostrar_estado_nodos()
+{
+
+	for (int i = 0; i < efectivo; i++)
+	{
+		if (*(punteros + i) != NULL)
+		{
+			printf("****Id del nodo: %d\n", i);
+			mostrar_nodo(*(punteros + i));
+		}
+	}
+}
 
 void aumentar_tam_arreglo()
 {
-	punteros = realloc(punteros, TAM * 2);
-	TAM *= 2;
+	punteros = realloc(punteros, TAMAN * 2);
+	TAMAN *= 2;
+}
+
+void llenar_bytes(void *ptr, int tam)
+{
+	int MAX = 256;
+	int num = 0;
+	unsigned char *punt = (unsigned char *)ptr;
+	for (int i = 0; i < tam; i++)
+	{
+		*(punt + i) = (char)num;
+		num = (num + 1) % MAX;
+	}
+}
+
+void dar_contenido()
+{
+	printf("Escriba el id del bloque al que desea dar contendio: ");
+	int id_bloque;
+	scanf("%d", &id_bloque);
+	if (punteros[id_bloque] != NULL)
+	{
+		llenar_bytes(punteros[id_bloque], tamanos[id_bloque]);
+	}
+	else
+	{
+		printf("Id incorrecto! \n");
+	}
+}
+
+void mostrar_bytes(void *ptr, int tam)
+{
+	unsigned char *punt = (unsigned char *)ptr;
+	int cont = 0;
+	while (cont < tam)
+	{
+		int lin = 0;
+		while (cont < tam && lin < 4)
+		{
+			int bytes = 0;
+			while (cont < tam && bytes < 8)
+			{
+				printf("%02X ", *(punt + cont));
+				cont++;
+				bytes++;
+			}
+			lin++;
+			printf("    ");
+		}
+		printf("\n");
+	}
+}
+
+void mostrar_contenido()
+{
+	printf("Escriba el id del bloque del que desea ver el contenido: ");
+	int id_bloque;
+	scanf("%d", &id_bloque);
+	if (punteros[id_bloque] != NULL)
+	{
+		printf("\n\t\t\tContendio de memoria:\n");
+		mostrar_bytes(punteros[id_bloque], tamanos[id_bloque]);
+	}
+	else
+	{
+		printf("Id incorrecto! \n");
+	}
 }

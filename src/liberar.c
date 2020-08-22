@@ -43,4 +43,3 @@ void liberar(void* ptr){
 	nodo_borrar->siguiente = NULL;
 
 }
-
