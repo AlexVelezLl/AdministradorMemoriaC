@@ -4,6 +4,9 @@
 
 void *nueva_dir(void *ant_ptr)
 {
+	if(admin.superbloques == NULL){
+		createadmin();
+	}
 	info_bloque *nodo_viajero = admin.lista_bloques.nodos;
 	int es_dir_actual = 0;
 	while (nodo_viajero != NULL)

@@ -21,6 +21,9 @@ void act_todos_contiguos();
  * fragmentada;
  */
 void desfragmentar(){
+	if(admin.superbloques == NULL){
+		createadmin();
+	}
 	int n_superb = admin.info.n_superbloques;
 	info_bloque* ultimos_superbloques[n_superb];
 	info_bloque* nodo_viajero = admin.lista_bloques.nodos;

@@ -29,6 +29,10 @@ void copiar_bytes(void *ptr1, void *ptr2, int n);
  */
 void *reasignar(void *ptr, size_t tam)
 {
+	if (admin.superbloques == NULL)
+	{
+		createadmin();
+	}
 	if (tam < 1)
 	{
 		printf("ERROR - NO SE PUEDE REASIGNAR EL BLOQUE A UN BLOQUE CON UN TAMAÑO MENOR A 1, USE LIBERAR EN VEZ DE REASIGN SI DESEA LIBERAR EL BLOQUE\n");
@@ -36,13 +40,12 @@ void *reasignar(void *ptr, size_t tam)
 	}
 	int supernodo_index;
 	info_bloque *nodo = buscar_nodo_prev(ptr, &supernodo_index);
-	nodo = nodo->siguiente;
 	if (nodo == NULL)
 	{
 		printf("ERROR - %p NO ES UN PUNTERO CREADO CON MEMASIGN\n", ptr);
 		return NULL;
 	}
-
+	nodo = nodo->siguiente;
 	unsigned int tam_actual = nodo->tam;
 	unsigned int pot_tam_bloque = nodo->tam + nodo->delta;
 	if (tam <= pot_tam_bloque)

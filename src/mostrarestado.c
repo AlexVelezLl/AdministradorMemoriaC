@@ -3,6 +3,9 @@
 
 void mostrar_estado()
 {
+    if(admin.superbloques == NULL){
+		createadmin();
+	}
     printf("\n╔═════════════════════════════════════════════════╗\n");
     printf("║             ESTADO DEL ADMINISTRADOR            ║\n");
     printf("║                   DE MEMORIA                    ║\n");
@@ -22,20 +25,26 @@ void mostrar_estado()
 
 void mostrar_superbloques()
 {
+    if(admin.superbloques == NULL){
+		createadmin();
+	}
     printf("\n╔═════════════════════════════════════════════════╗\n");
     printf("║             ESTADO DE SUPERBLOQUES              ║\n");
     printf("╚═════════════════════════════════════════════════╝\n\n");
     for (int i = 0; i < admin.info.n_superbloques; i++)
     {
-        printf("/t Superbloque %d", i);
+        printf("\t Superbloque %d\n", i);
         printf("Tamaño:\t\t\t\t |%d\n", (admin.superbloques + i)->tam);
-        printf("Tamaño contiguo mayor:\t|%d\n", (admin.superbloques + i)->tam_contiguo_mayor);
+        printf("Tamaño contiguo mayor:\t\t|%d\n", (admin.superbloques + i)->tam_contiguo_mayor);
         printf("──────────────────────────────\n\n");
     }
 }
 
 void mostrar_nodo(void *ptr)
 {
+    if(admin.superbloques == NULL){
+		createadmin();
+	}
     info_bloque *nodo_viajero = admin.lista_bloques.nodos->siguiente;
     while (nodo_viajero != NULL)
     {
